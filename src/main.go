@@ -2,7 +2,9 @@ package main
 
 import (
 	"bufio"
+	"bytes"
 	"fmt"
+	"net/http"
 	"os"
 	"path/filepath"
 	"strings"
@@ -46,7 +48,46 @@ func processFile(filePath string, todoPrefix string) ([]Comment, error) {
 	return commentLines, nil
 }
 
+func createIssue(filePath string, comments []Comment) {
+	if comments == nil || len(comments) < 1 {
+		return
+	}
+
+	token := os.Getenv("INPUT_GITHUB_TOKEN")
+	repoName := os.Getenv("GITHUB_REPOSITORY")
+	issueTitle := fmt.Sprintf("[todo-mitsukeru-kun] %s", filePath)
+	issueBody := "<details>\\n<summary>Todo Comments</summary>\\n"
+	for _, comment := range comments {
+		issueBody += fmt.Sprintf("%d: %s\\n\\n", comment.LineNumber, strings.ReplaceAll(comment.Body, "\t", ""))
+	}
+	issueBody += "</details>\\n"
+
+	url := fmt.Sprintf("https://api.github.com/repos/%s/issues", repoName)
+	jsonData := fmt.Sprintf(`{"title": "%s", "body": "%s"}`, issueTitle, issueBody)
+
+	req, err := http.NewRequest("POST", url, bytes.NewBufferString(jsonData))
+	if err != nil {
+		fmt.Println("Error creating request:", err)
+		return
+	}
+
+	req.Header.Set("Content-Type", "application/vnd.github+json")
+	req.Header.Set("Authorization", "Bearer "+token)
+	req.Header.Set("X-GitHub-Api-Version", "2022-11-28")
+
+	client := http.Client{}
+
+	resp, err := client.Do(req)
+	if err != nil {
+		fmt.Println("Error making request:", err)
+		return
+	}
+	defer resp.Body.Close()
+}
+
 func visitFile(fp string, fi os.DirEntry, err error) error {
+	fmt.Println("")
+
 	if err != nil {
 		fmt.Println(err)
 		return nil
@@ -58,16 +99,21 @@ func visitFile(fp string, fi os.DirEntry, err error) error {
 
 	ext := strings.ToLower(filepath.Ext(fp))
 	todoPrefix := commentFormat[ext]
+	if todoPrefix == "" {
+		return nil
+	}
+
 	comments, err := processFile(fp, todoPrefix)
 	if err != nil {
 		fmt.Println("Error processing file:", err)
 	} else {
-		fmt.Printf("CommentCount: %d\n", len(comments))
-		for _, comment := range comments {
-			fmt.Printf("%d: %s\n", comment.LineNumber, strings.TrimSpace(comment.Body))
+		commentCount := len(comments)
+		if commentCount < 1 {
+			return nil
 		}
 	}
-	fmt.Println("--------------")
+
+	createIssue(fp, comments)
 
 	return nil
 }
@@ -79,35 +125,23 @@ type Params struct {
 
 func GetParams() Params {
 	githubToken := os.Getenv("INPUT_GITHUB_TOKEN")
+	if githubToken == "" {
+		fmt.Println("INPUT_GITHUB_TOKEN not found. Set INPUT_GITHUB_TOKEN as environment variable.")
+		os.Exit(1)
+	}
+
 	targetDir := os.Getenv("INPUT_TARGET_DIR")
+	if targetDir == "" {
+		fmt.Println("INPUT_TARGET_DIR not found. Set INPUT_TARGET_DIR as environment variable.")
+		os.Exit(1)
+	}
 
 	return Params{GithubToken: githubToken, TargetDir: targetDir}
 }
 
 func main() {
-	fmt.Println("=============== EnvVars ===============")
-	envVars := os.Environ()
-	for _, envVar := range envVars {
-		fmt.Println(envVar)
-	}
-	fmt.Println("=======================================")
-
-	fmt.Println("=============== Getwd ================")
-	currentDir, err := os.Getwd()
-	if err != nil {
-		fmt.Println("Error getting current directory:", err)
-		return
-	}
-	fmt.Println("Current Directory:", currentDir)
-	fmt.Println("=======================================")
-
 	params := GetParams()
-	if params.GithubToken == "" {
-		fmt.Println("Github token not found. Set the github_token environment variable.")
-		os.Exit(1)
-	}
-
-	err = filepath.WalkDir(params.TargetDir, visitFile)
+	err := filepath.WalkDir(params.TargetDir, visitFile)
 	if err != nil {
 		fmt.Println("Error walking the path:", err)
 	}

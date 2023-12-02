@@ -1,7 +1,10 @@
 name: "todo-mitsukeru-kun"
-description: "todo-mitsukeru-kun"
+description: "Compile a list of TODO comments for each file into an issue."
 runs:
   using: "composite"
   steps:
     - run: go run ${{ github.action_path }}/src/main.go 
       shell: bash
+branding:
+    color: "blue"
+    icon: "check-square"
