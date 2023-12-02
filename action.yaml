@@ -1,16 +1,7 @@
 name: "todo-mitsukeru-kun"
 description: "todo-mitsukeru-kun"
-inputs:
-  test:
-    description: "test"
-    required: true
-    default: "test"
-  github-token:
-    description: "GITHUB_TOKEN"
-    required: true
-    default: ""
 runs:
   using: "composite"
   steps:
-    - run: go run ${{ github.action_path }}/src/main.go ${{ inputs.test }}
+    - run: go run ${{ github.action_path }}/src/main.go 
       shell: bash

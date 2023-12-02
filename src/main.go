@@ -77,20 +77,27 @@ type Params struct {
 }
 
 func GetParams() Params {
-	fmt.Println("=== GetParams ===")
 	token := os.Getenv("INPUT_GITHUB_TOKEN")
-	fmt.Println(token)
-
-	fmt.Println(os.Getenv("INPUT_TEST"))
 
 	return Params{GithubToken: token}
 }
 
 func main() {
+	fmt.Println("=============== EnvVars ===============")
 	envVars := os.Environ()
 	for _, envVar := range envVars {
 		fmt.Println(envVar)
 	}
+	fmt.Println("=======================================")
+
+	fmt.Println("=============== Getwd ================")
+	currentDir, err := os.Getwd()
+	if err != nil {
+		fmt.Println("Error getting current directory:", err)
+		return
+	}
+	fmt.Println("Current Directory:", currentDir)
+	fmt.Println("=======================================")
 
 	params := GetParams()
 	if params.GithubToken == "" {
@@ -98,15 +105,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	// actionのwithで指定するから多分いらない
-	if len(os.Args) < 2 {
-		fmt.Println("Usage: go run main.go <directory>")
-		os.Exit(1)
-	}
-
-	targetDirectory := os.Args[1]
-
-	err := filepath.WalkDir(targetDirectory, visitFile)
+	err = filepath.WalkDir(".", visitFile)
 	if err != nil {
 		fmt.Println("Error walking the path:", err)
 	}
