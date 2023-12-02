@@ -74,12 +74,14 @@ func visitFile(fp string, fi os.DirEntry, err error) error {
 
 type Params struct {
 	GithubToken string
+	TargetDir   string
 }
 
 func GetParams() Params {
-	token := os.Getenv("INPUT_GITHUB_TOKEN")
+	githubToken := os.Getenv("INPUT_GITHUB_TOKEN")
+	targetDir := os.Getenv("INPUT_TARGET_DIR")
 
-	return Params{GithubToken: token}
+	return Params{GithubToken: githubToken, TargetDir: targetDir}
 }
 
 func main() {
@@ -105,7 +107,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	err = filepath.WalkDir(".", visitFile)
+	err = filepath.WalkDir(params.TargetDir, visitFile)
 	if err != nil {
 		fmt.Println("Error walking the path:", err)
 	}
