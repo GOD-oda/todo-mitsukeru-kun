@@ -87,6 +87,11 @@ func GetParams() Params {
 }
 
 func main() {
+	envVars := os.Environ()
+	for _, envVar := range envVars {
+		fmt.Println(envVar)
+	}
+
 	params := GetParams()
 	if params.GithubToken == "" {
 		fmt.Println("Github token not found. Set the github_token environment variable.")
