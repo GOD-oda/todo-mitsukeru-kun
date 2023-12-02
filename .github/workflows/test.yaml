@@ -11,7 +11,7 @@ jobs:
         id: example_step
         with:
           repo-token: ${{ secrets.GITHUB_TOKEN }}
-        run: echo $INPUT_REPO_TOKEN
+        run: echo "The repo is ${{ github.repository }}"
       - name: Use todo-mitsukeru-kun
         uses: GOD-oda/todo-mitsukeru-kun@v0.0.1
         with:
