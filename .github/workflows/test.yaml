@@ -7,12 +7,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v3
-#      - name: Use todo-mitsukeru-kun
-#        uses: GOD-oda/todo-mitsukeru-kun@v0.0.1
-#        with:
-#          test: "hoge"
-#          github_token: ${{ secrets.GITHUB_TOKEN }}
-      - name: hoge
-        run: |
-          T=${{ secrets.GITHUB_TOKEN }}
-          echo ${#T}
+      - name: Use todo-mitsukeru-kun
+        uses: GOD-oda/todo-mitsukeru-kun@v0.0.1
+        with:
+          test: "hoge"
+          github_token: ${{ secrets.GITHUB_TOKEN }}
