@@ -77,8 +77,11 @@ type Params struct {
 }
 
 func GetParams() Params {
+	fmt.Println("=== GetParams ===")
 	token := os.Getenv("INPUT_GITHUB_TOKEN")
 	fmt.Println(token)
+
+	fmt.Println(os.Getenv("INPUT_TEST"))
 
 	return Params{GithubToken: token}
 }
