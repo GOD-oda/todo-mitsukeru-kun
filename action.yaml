@@ -5,7 +5,7 @@ inputs:
     description: "test"
     required: true
     default: "test"
-  github_token:
+  github-token:
     description: "GITHUB_TOKEN"
     required: true
     default: ""
