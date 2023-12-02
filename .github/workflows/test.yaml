@@ -13,4 +13,4 @@ jobs:
         uses: GOD-oda/todo-mitsukeru-kun@v0.0.1
         env:
           INPUT_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          INPUT_TEST: "hoge"
+          INPUT_TARGET_DIR: "src"
