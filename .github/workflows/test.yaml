@@ -8,9 +8,6 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
       - name: Use with parameter
-        id: example_step
-        with:
-          repo-token: ${{ secrets.GITHUB_TOKEN }}
         run: echo "The repo is ${{ github.repository }}"
       - name: Use todo-mitsukeru-kun
         uses: GOD-oda/todo-mitsukeru-kun@v0.0.1
