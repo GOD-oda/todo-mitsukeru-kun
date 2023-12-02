@@ -77,7 +77,7 @@ type Params struct {
 }
 
 func GetParams() Params {
-	token := os.Getenv("github_token")
+	token := os.Getenv("INPUT_GITHUB_TOKEN")
 	fmt.Println(token)
 
 	return Params{GithubToken: token}
