@@ -12,3 +12,6 @@ jobs:
         with:
           test: "hoge"
           github_token: ${{ secrets.GITHUB_TOKEN }}
+      - name: hoge
+        run: |
+          echo ${{ secrets.GITHUB_TOKEN }}
