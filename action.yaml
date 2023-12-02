@@ -5,6 +5,10 @@ inputs:
     description: "test"
     required: true
     default: "test"
+  github_token:
+    description: "GITHUB_TOKEN"
+    required: true
+    default: ""
 runs:
   using: "composite"
   steps:
