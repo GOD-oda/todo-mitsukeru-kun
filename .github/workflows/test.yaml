@@ -11,6 +11,6 @@ jobs:
         run: echo "The repo is ${{ github.repository }}"
       - name: Use todo-mitsukeru-kun
         uses: GOD-oda/todo-mitsukeru-kun@v0.0.1
-        with:
-          test: "hoge"
-          github-token: ${{ secrets.GITHUB_TOKEN }}
+        env:
+          INPUT_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          INPUT_TEST: "hoge"
