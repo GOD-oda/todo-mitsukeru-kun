@@ -10,4 +10,4 @@ jobs:
       - name: Use todo-mitsukeru-kun
         uses: GOD-oda/todo-mitsukeru-kun@v0.0.1
         with:
-          test-input: "test"
+          test: "hoge"
