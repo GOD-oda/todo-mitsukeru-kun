@@ -1,0 +1,12 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: ./docker/go/Dockerfile
+      target: dev
+    volumes:
+      - ./src:/todo-mitsukeru-kun/src
+    environment:
+      APP_ENV: dev
+    ports:
+      - "8080:8080"
