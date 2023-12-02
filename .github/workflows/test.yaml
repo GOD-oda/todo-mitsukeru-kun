@@ -11,3 +11,4 @@ jobs:
         uses: GOD-oda/todo-mitsukeru-kun@v0.0.1
         with:
           test: "hoge"
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
