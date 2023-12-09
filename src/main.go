@@ -22,6 +22,7 @@ type Comment struct {
 }
 
 func processFile(filePath string, todoPrefix string) ([]Comment, error) {
+	print "hoge"
 	file, err := os.Open(filePath)
 	if err != nil {
 		return nil, err
