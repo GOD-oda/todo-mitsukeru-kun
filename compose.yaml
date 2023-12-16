@@ -8,6 +8,6 @@ services:
       - ./src:/todo-mitsukeru-kun/src
     environment:
       APP_ENV: dev
-      INPUT_GITHUB_TOKEN: xxx
+      INPUT_GITHUB_TOKEN: ""
     ports:
       - "8080:8080"
