@@ -3,11 +3,14 @@ package main
 import (
 	"bufio"
 	"bytes"
+	"encoding/json"
 	"fmt"
+	"gododa/todo-mitsukeru-kun/github"
 	"net/http"
 	"os"
 	"path/filepath"
 	"strings"
+	"sync"
 )
 
 var commentFormat = map[string]string{
@@ -22,14 +25,11 @@ type Comment struct {
 }
 
 func processFile(filePath string, todoPrefix string) ([]Comment, error) {
-	print "hoge"
 	file, err := os.Open(filePath)
 	if err != nil {
 		return nil, err
 	}
 	defer file.Close()
-
-	fmt.Println("Processing file:", filePath)
 
 	var commentLines []Comment
 	lineNumber := 0
@@ -49,24 +49,89 @@ func processFile(filePath string, todoPrefix string) ([]Comment, error) {
 	return commentLines, nil
 }
 
-func createIssue(filePath string, comments []Comment) {
+type CachedItems struct {
+	Items []map[string]interface{}
+}
+
+var (
+	mu          sync.Mutex
+	cachedItems CachedItems
+	fetched     bool
+)
+
+func getIssues() (CachedItems, error) {
+	mu.Lock()
+	if fetched {
+		mu.Unlock()
+		return cachedItems, nil
+	}
+	mu.Unlock()
+
+	token := os.Getenv("INPUT_GITHUB_TOKEN")
+	repoName := os.Getenv("GITHUB_REPOSITORY")
+
+	url := fmt.Sprintf("repos/%s/issues?creator=app/github-actions", repoName)
+	res, err := github.Get(url, "", github.MakeHeader(token))
+	if err != nil {
+		return CachedItems{}, err
+	}
+	defer res.Body.Close()
+
+	var items []map[string]interface{}
+	err = json.NewDecoder(res.Body).Decode(&items)
+	if err != nil {
+		return CachedItems{}, err
+	}
+
+	mu.Lock()
+	cachedItems = CachedItems{Items: items}
+	fetched = true
+	mu.Unlock()
+
+	return cachedItems, err
+}
+
+func saveIssue(filePath string, comments []Comment) {
 	if comments == nil || len(comments) < 1 {
 		return
 	}
 
+	// TODO: use getEnv()
 	token := os.Getenv("INPUT_GITHUB_TOKEN")
 	repoName := os.Getenv("GITHUB_REPOSITORY")
 	issueTitle := fmt.Sprintf("[todo-mitsukeru-kun] %s", filePath)
-	issueBody := "<details>\\n<summary>Todo Comments</summary>\\n"
+	issueBody := "<details>\\n<summary>Todo Comments</summary>\\n\\n\\n"
 	for _, comment := range comments {
-		issueBody += fmt.Sprintf("%d: %s\\n\\n", comment.LineNumber, strings.ReplaceAll(comment.Body, "\t", ""))
+		issueBody += fmt.Sprintf("%d: %s\\n\\n", comment.LineNumber, strings.TrimSpace(comment.Body))
 	}
 	issueBody += "</details>\\n"
 
 	url := fmt.Sprintf("https://api.github.com/repos/%s/issues", repoName)
 	jsonData := fmt.Sprintf(`{"title": "%s", "body": "%s"}`, issueTitle, issueBody)
 
-	req, err := http.NewRequest("POST", url, bytes.NewBufferString(jsonData))
+	_, err := getIssues()
+	if err != nil {
+		fmt.Println("Error getting issues:", err)
+		return
+	}
+
+	var issueId float64
+	for _, issue := range cachedItems.Items {
+		if issue["title"] == issueTitle {
+			issueId = issue["number"].(float64)
+			break
+		}
+	}
+
+	var httpMethod string
+	if issueId != 0 {
+		url = fmt.Sprintf("%s/%d", url, int(issueId))
+		httpMethod = "PATCH"
+	} else {
+		httpMethod = "POST"
+	}
+
+	req, err := http.NewRequest(httpMethod, url, bytes.NewBufferString(jsonData))
 	if err != nil {
 		fmt.Println("Error creating request:", err)
 		return
@@ -87,8 +152,6 @@ func createIssue(filePath string, comments []Comment) {
 }
 
 func visitFile(fp string, fi os.DirEntry, err error) error {
-	fmt.Println("")
-
 	if err != nil {
 		fmt.Println(err)
 		return nil
@@ -114,7 +177,7 @@ func visitFile(fp string, fi os.DirEntry, err error) error {
 		}
 	}
 
-	createIssue(fp, comments)
+	saveIssue(fp, comments)
 
 	return nil
 }
@@ -124,7 +187,7 @@ type Params struct {
 	TargetDir   string
 }
 
-func GetParams() Params {
+func getEnv() Params {
 	githubToken := os.Getenv("INPUT_GITHUB_TOKEN")
 	if githubToken == "" {
 		fmt.Println("INPUT_GITHUB_TOKEN not found. Set INPUT_GITHUB_TOKEN as environment variable.")
@@ -141,7 +204,7 @@ func GetParams() Params {
 }
 
 func main() {
-	params := GetParams()
+	params := getEnv()
 	err := filepath.WalkDir(params.TargetDir, visitFile)
 	if err != nil {
 		fmt.Println("Error walking the path:", err)
