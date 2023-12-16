@@ -96,7 +96,7 @@ func saveIssue(filePath string, comments []Comment) {
 		return
 	}
 
-	// TODO: 二重で取得している
+	// TODO: use getEnv()
 	token := os.Getenv("INPUT_GITHUB_TOKEN")
 	repoName := os.Getenv("GITHUB_REPOSITORY")
 	issueTitle := fmt.Sprintf("[todo-mitsukeru-kun] %s", filePath)
@@ -109,7 +109,6 @@ func saveIssue(filePath string, comments []Comment) {
 	url := fmt.Sprintf("https://api.github.com/repos/%s/issues", repoName)
 	jsonData := fmt.Sprintf(`{"title": "%s", "body": "%s"}`, issueTitle, issueBody)
 
-	// TODO: 同じタイトルのissueがある場合は本文を更新する
 	_, err := getIssues()
 	if err != nil {
 		fmt.Println("Error getting issues:", err)
@@ -188,8 +187,7 @@ type Params struct {
 	TargetDir   string
 }
 
-// TODO: GetEnv()とかにリネームした方がいいかも
-func GetParams() Params {
+func getEnv() Params {
 	githubToken := os.Getenv("INPUT_GITHUB_TOKEN")
 	if githubToken == "" {
 		fmt.Println("INPUT_GITHUB_TOKEN not found. Set INPUT_GITHUB_TOKEN as environment variable.")
@@ -202,11 +200,11 @@ func GetParams() Params {
 		os.Exit(1)
 	}
 
-	return Params{GithubToken: "", TargetDir: targetDir}
+	return Params{GithubToken: githubToken, TargetDir: targetDir}
 }
 
 func main() {
-	params := GetParams()
+	params := getEnv()
 	err := filepath.WalkDir(params.TargetDir, visitFile)
 	if err != nil {
 		fmt.Println("Error walking the path:", err)
