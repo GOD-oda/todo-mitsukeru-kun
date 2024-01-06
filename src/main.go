@@ -22,10 +22,19 @@ var commentFormat = map[string]string{
 type Comment struct {
 	Body       string
 	LineNumber int
+	FilePath   string
 }
 
 func (c Comment) makeLine() string {
-	return fmt.Sprintf("%d: %s\\n\\n", c.LineNumber, strings.TrimSpace(c.Body))
+	// TODO: use getEnv()
+	repoName := os.Getenv("GITHUB_REPOSITORY")
+
+	return fmt.Sprintf("[%d: %s\\n\\n](https://github.com/%s/blob/main/src/main.go#L%d)",
+		c.LineNumber,
+		strings.TrimSpace(c.Body),
+		repoName,
+		c.LineNumber,
+	)
 }
 
 func processFile(filePath string, todoPrefix string) ([]Comment, error) {
@@ -42,7 +51,7 @@ func processFile(filePath string, todoPrefix string) ([]Comment, error) {
 		line := scanner.Text()
 		lineNumber++
 		if strings.HasPrefix(strings.ToUpper(strings.TrimSpace(line)), todoPrefix) {
-			commentLines = append(commentLines, Comment{Body: line, LineNumber: lineNumber})
+			commentLines = append(commentLines, Comment{Body: line, LineNumber: lineNumber, FilePath: filePath})
 		}
 	}
 

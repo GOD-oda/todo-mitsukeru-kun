@@ -14,3 +14,14 @@ func TestGetEnv(t *testing.T) {
 		t.Errorf("expected %v, but got %v", expected, actual)
 	}
 }
+
+func TestCommentMakeLine(t *testing.T) {
+	os.Setenv("GITHUB_REPOSITORY", "owner/repo")
+	c := Comment{Body: "TODO: TODO sample", LineNumber: 1}
+	expected := "[1: TODO: TODO sample\\n\\n](https://github.com/owner/repo/blob/main/src/main.go#L1)"
+
+	actual := c.makeLine()
+	if expected != actual {
+		t.Errorf("expected %v, but got %v", expected, actual)
+	}
+}

@@ -2,15 +2,6 @@ package main
 
 import "testing"
 
-func TestMakeIssueBody(t *testing.T) {
-	c := Comment{Body: "TODO: TODO sample", LineNumber: 1}
-	expected := "1: TODO: TODO sample\\n\\n"
-	actual := c.makeLine()
-	if expected != actual {
-		t.Errorf("expected %v, but got %v", expected, actual)
-	}
-}
-
 func TestIssueBodyAdd(t *testing.T) {
 	issueBody := IssueBody{}
 	issueBody.add("body")
