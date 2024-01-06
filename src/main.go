@@ -209,6 +209,9 @@ func getEnv() Params {
 }
 
 func main() {
+	for _, env := range os.Environ() {
+		fmt.Println(env)
+	}
 	params := getEnv()
 	err := filepath.WalkDir(params.TargetDir, visitFile)
 	if err != nil {
