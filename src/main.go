@@ -116,6 +116,7 @@ func saveIssue(filePath string, comments []Comment) {
 	issueTitle := IssueTitle{Value: fmt.Sprintf("[todo-mitsukeru-kun] %s", filePath)}
 	issueBody := &IssueBody{Value: "<details>\\n<summary>Todo Comments</summary>\\n\\n\\n"}
 	for _, comment := range comments {
+		fmt.Println(comment.makeLine())
 		issueBody.add(comment.makeLine())
 	}
 	issueBody.add("</details>\\n")
