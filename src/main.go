@@ -95,27 +95,6 @@ func getIssues() (CachedItems, error) {
 	return cachedItems, err
 }
 
-type Issue struct {
-	Title IssueTitle `json:"title"`
-	Body  IssueBody  `json:"body"`
-}
-
-func (i Issue) toJson() string {
-	return fmt.Sprintf(`{"title": "%s", "body": "%s"}`, i.Title.Value, i.Body.Value)
-}
-
-type IssueTitle struct {
-	Value string
-}
-
-type IssueBody struct {
-	Value string
-}
-
-func (i *IssueBody) add(value string) {
-	i.Value += value
-}
-
 func saveIssue(filePath string, comments []Comment) {
 	if comments == nil || len(comments) < 1 {
 		return
