@@ -5,6 +5,7 @@ on: [push]
 jobs:
   test:
     runs-on: ubuntu-latest
+    working-directory: ./src
     strategy:
       matrix:
         go-version: [ '1.21.x' ]
