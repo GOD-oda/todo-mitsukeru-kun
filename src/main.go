@@ -22,6 +22,20 @@ var commentFormat = map[string]string{
 type Comment struct {
 	Body       string
 	LineNumber int
+	FilePath   string
+}
+
+func (c Comment) makeLine() string {
+	// TODO: use getEnv()
+	repoName := os.Getenv("GITHUB_REPOSITORY")
+
+	return fmt.Sprintf("[%d: %s](https://github.com/%s/blob/main/%s#L%d)\\n\\n",
+		c.LineNumber,
+		strings.TrimSpace(c.Body),
+		repoName,
+		c.FilePath,
+		c.LineNumber,
+	)
 }
 
 func processFile(filePath string, todoPrefix string) ([]Comment, error) {
@@ -38,7 +52,7 @@ func processFile(filePath string, todoPrefix string) ([]Comment, error) {
 		line := scanner.Text()
 		lineNumber++
 		if strings.HasPrefix(strings.ToUpper(strings.TrimSpace(line)), todoPrefix) {
-			commentLines = append(commentLines, Comment{Body: line, LineNumber: lineNumber})
+			commentLines = append(commentLines, Comment{Body: line, LineNumber: lineNumber, FilePath: filePath})
 		}
 	}
 
@@ -99,15 +113,15 @@ func saveIssue(filePath string, comments []Comment) {
 	// TODO: use getEnv()
 	token := os.Getenv("INPUT_GITHUB_TOKEN")
 	repoName := os.Getenv("GITHUB_REPOSITORY")
-	issueTitle := fmt.Sprintf("[todo-mitsukeru-kun] %s", filePath)
-	issueBody := "<details>\\n<summary>Todo Comments</summary>\\n\\n\\n"
+	issueTitle := IssueTitle{Value: fmt.Sprintf("[todo-mitsukeru-kun] %s", filePath)}
+	issueBody := &IssueBody{Value: "<details>\\n<summary>Todo Comments</summary>\\n\\n\\n"}
 	for _, comment := range comments {
-		issueBody += fmt.Sprintf("%d: %s\\n\\n", comment.LineNumber, strings.TrimSpace(comment.Body))
+		issueBody.add(comment.makeLine())
 	}
-	issueBody += "</details>\\n"
+	issueBody.add("</details>\\n")
 
 	url := fmt.Sprintf("https://api.github.com/repos/%s/issues", repoName)
-	jsonData := fmt.Sprintf(`{"title": "%s", "body": "%s"}`, issueTitle, issueBody)
+	jsonData := Issue{Title: issueTitle, Body: *issueBody}.toJson()
 
 	_, err := getIssues()
 	if err != nil {
@@ -117,7 +131,7 @@ func saveIssue(filePath string, comments []Comment) {
 
 	var issueId float64
 	for _, issue := range cachedItems.Items {
-		if issue["title"] == issueTitle {
+		if issue["title"] == issueTitle.Value {
 			issueId = issue["number"].(float64)
 			break
 		}
@@ -131,6 +145,7 @@ func saveIssue(filePath string, comments []Comment) {
 		httpMethod = "POST"
 	}
 
+	// TODO: use github package
 	req, err := http.NewRequest(httpMethod, url, bytes.NewBufferString(jsonData))
 	if err != nil {
 		fmt.Println("Error creating request:", err)
