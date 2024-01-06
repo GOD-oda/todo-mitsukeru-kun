@@ -24,7 +24,7 @@ type Comment struct {
 	LineNumber int
 }
 
-func (c Comment) makeIssueBody() string {
+func (c Comment) makeLine() string {
 	return fmt.Sprintf("%d: %s\\n\\n", c.LineNumber, strings.TrimSpace(c.Body))
 }
 
@@ -95,6 +95,27 @@ func getIssues() (CachedItems, error) {
 	return cachedItems, err
 }
 
+type Issue struct {
+	Title IssueTitle `json:"title"`
+	Body  IssueBody  `json:"body"`
+}
+
+func (i Issue) toJson() string {
+	return fmt.Sprintf(`{"title": "%s", "body": "%s"}`, i.Title.Value, i.Body.Value)
+}
+
+type IssueTitle struct {
+	Value string
+}
+
+type IssueBody struct {
+	Value string
+}
+
+func (i *IssueBody) add(value string) {
+	i.Value += value
+}
+
 func saveIssue(filePath string, comments []Comment) {
 	if comments == nil || len(comments) < 1 {
 		return
@@ -103,15 +124,15 @@ func saveIssue(filePath string, comments []Comment) {
 	// TODO: use getEnv()
 	token := os.Getenv("INPUT_GITHUB_TOKEN")
 	repoName := os.Getenv("GITHUB_REPOSITORY")
-	issueTitle := fmt.Sprintf("[todo-mitsukeru-kun] %s", filePath)
-	issueBody := "<details>\\n<summary>Todo Comments</summary>\\n\\n\\n"
+	issueTitle := IssueTitle{Value: fmt.Sprintf("[todo-mitsukeru-kun] %s", filePath)}
+	issueBody := &IssueBody{Value: "<details>\\n<summary>Todo Comments</summary>\\n\\n\\n"}
 	for _, comment := range comments {
-		issueBody += comment.makeIssueBody()
+		issueBody.add(comment.makeLine())
 	}
-	issueBody += "</details>\\n"
+	issueBody.add("</details>\\n")
 
 	url := fmt.Sprintf("https://api.github.com/repos/%s/issues", repoName)
-	jsonData := fmt.Sprintf(`{"title": "%s", "body": "%s"}`, issueTitle, issueBody)
+	jsonData := Issue{Title: issueTitle, Body: *issueBody}.toJson()
 
 	_, err := getIssues()
 	if err != nil {
