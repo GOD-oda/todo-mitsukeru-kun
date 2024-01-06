@@ -24,6 +24,10 @@ type Comment struct {
 	LineNumber int
 }
 
+func (c Comment) makeIssueBody() string {
+	return fmt.Sprintf("%d: %s\\n\\n", c.LineNumber, strings.TrimSpace(c.Body))
+}
+
 func processFile(filePath string, todoPrefix string) ([]Comment, error) {
 	file, err := os.Open(filePath)
 	if err != nil {
@@ -102,7 +106,7 @@ func saveIssue(filePath string, comments []Comment) {
 	issueTitle := fmt.Sprintf("[todo-mitsukeru-kun] %s", filePath)
 	issueBody := "<details>\\n<summary>Todo Comments</summary>\\n\\n\\n"
 	for _, comment := range comments {
-		issueBody += fmt.Sprintf("%d: %s\\n\\n", comment.LineNumber, strings.TrimSpace(comment.Body))
+		issueBody += comment.makeIssueBody()
 	}
 	issueBody += "</details>\\n"
 
