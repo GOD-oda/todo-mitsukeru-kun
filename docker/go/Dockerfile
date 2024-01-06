@@ -7,6 +7,6 @@ WORKDIR ${ROOT}
 RUN apt update  \
     && apt install git
 
-COPY go.mod go.sum ./
+COPY src/go.mod ./
 RUN go mod download
-COPY src/ ./src
+COPY src .

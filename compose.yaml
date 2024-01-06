@@ -5,7 +5,7 @@ services:
       dockerfile: ./docker/go/Dockerfile
       target: dev
     volumes:
-      - ./src:/todo-mitsukeru-kun/src
+      - ./src:/todo-mitsukeru-kun
     environment:
       APP_ENV: dev
       INPUT_GITHUB_TOKEN: ""
