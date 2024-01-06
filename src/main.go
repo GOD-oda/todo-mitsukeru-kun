@@ -145,9 +145,6 @@ func saveIssue(filePath string, comments []Comment) {
 		httpMethod = "POST"
 	}
 
-	fmt.Println(url)
-	fmt.Println(httpMethod)
-
 	// TODO: use github package
 	req, err := http.NewRequest(httpMethod, url, bytes.NewBufferString(jsonData))
 	if err != nil {
@@ -222,9 +219,6 @@ func getEnv() Params {
 }
 
 func main() {
-	//for _, env := range os.Environ() {
-	//	fmt.Println(env)
-	//}
 	params := getEnv()
 	err := filepath.WalkDir(params.TargetDir, visitFile)
 	if err != nil {
