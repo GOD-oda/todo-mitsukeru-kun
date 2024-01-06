@@ -29,7 +29,7 @@ func (c Comment) makeLine() string {
 	// TODO: use getEnv()
 	repoName := os.Getenv("GITHUB_REPOSITORY")
 
-	return fmt.Sprintf("[%d: %s\\n\\n](https://github.com/%s/blob/main/%s#L%d)",
+	return fmt.Sprintf("[%d: %s](https://github.com/%s/blob/main/%s#L%d)\\n\\n",
 		c.LineNumber,
 		strings.TrimSpace(c.Body),
 		repoName,
