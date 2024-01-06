@@ -3,7 +3,7 @@ description: "Compile a list of TODO comments for each file into an issue."
 runs:
   using: "composite"
   steps:
-    - run:  ${{ github.action_path }}/src/bin/linux/todo-mitsukeru-kun
+    - run:  ${{ github.action_path }}/src/bin/dist/linux/todo-mitsukeru-kun
       shell: bash
 branding:
     color: "blue"
