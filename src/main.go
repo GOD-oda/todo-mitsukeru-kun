@@ -116,7 +116,6 @@ func saveIssue(filePath string, comments []Comment) {
 	issueTitle := IssueTitle{Value: fmt.Sprintf("[todo-mitsukeru-kun] %s", filePath)}
 	issueBody := &IssueBody{Value: "<details>\\n<summary>Todo Comments</summary>\\n\\n\\n"}
 	for _, comment := range comments {
-		fmt.Println(comment.makeLine())
 		issueBody.add(comment.makeLine())
 	}
 	issueBody.add("</details>\\n")
@@ -132,7 +131,7 @@ func saveIssue(filePath string, comments []Comment) {
 
 	var issueId float64
 	for _, issue := range cachedItems.Items {
-		if issue["title"] == issueTitle {
+		if issue["title"] == issueTitle.Value {
 			issueId = issue["number"].(float64)
 			break
 		}
@@ -145,6 +144,9 @@ func saveIssue(filePath string, comments []Comment) {
 	} else {
 		httpMethod = "POST"
 	}
+
+	fmt.Println(url)
+	fmt.Println(httpMethod)
 
 	// TODO: use github package
 	req, err := http.NewRequest(httpMethod, url, bytes.NewBufferString(jsonData))
@@ -220,9 +222,9 @@ func getEnv() Params {
 }
 
 func main() {
-	for _, env := range os.Environ() {
-		fmt.Println(env)
-	}
+	//for _, env := range os.Environ() {
+	//	fmt.Println(env)
+	//}
 	params := getEnv()
 	err := filepath.WalkDir(params.TargetDir, visitFile)
 	if err != nil {
