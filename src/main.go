@@ -156,6 +156,7 @@ func saveIssue(filePath string, comments []Comment) {
 		httpMethod = "POST"
 	}
 
+	// TODO: use github package
 	req, err := http.NewRequest(httpMethod, url, bytes.NewBufferString(jsonData))
 	if err != nil {
 		fmt.Println("Error creating request:", err)
