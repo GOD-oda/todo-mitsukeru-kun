@@ -17,6 +17,7 @@ var commentFormat = map[string]string{
 	".go":  "// TODO",
 	".php": "// TODO",
 	".rb":  "# TODO",
+	".ts":  "// TODO",
 }
 
 type Comment struct {
@@ -38,7 +39,7 @@ func (c Comment) makeLine() string {
 	)
 }
 
-func processFile(filePath string, todoPrefix string) ([]Comment, error) {
+func extractComments(filePath string, todoPrefix string) ([]Comment, error) {
 	file, err := os.Open(filePath)
 	if err != nil {
 		return nil, err
@@ -182,7 +183,7 @@ func visitFile(fp string, fi os.DirEntry, err error) error {
 		return nil
 	}
 
-	comments, err := processFile(fp, todoPrefix)
+	comments, err := extractComments(fp, todoPrefix)
 	if err != nil {
 		fmt.Println("Error processing file:", err)
 	} else {
