@@ -23,3 +23,8 @@ jobs:
 ```
 
 This workflow runs on Monday morning at 9:00 a.m. and searches for TODO comments in the `INPUT_TARGET_DIR` directory.
+
+
+## Contribution
+
+Please run `cd src && sh ./build.sh` and include the created binary in the PR.
