@@ -30,7 +30,7 @@ func (c Comment) makeLine() string {
 	// TODO: use getEnv()
 	repoName := os.Getenv("GITHUB_REPOSITORY")
 
-	return fmt.Sprintf("[%d: %s](https://github.com/%s/blob/main/%s#L%d)\\n\\n",
+	return fmt.Sprintf("[%d: %s](https://github.com/%s/blob/main/%s#L%d)\n\n",
 		c.LineNumber,
 		strings.TrimSpace(c.Body),
 		repoName,
@@ -115,11 +115,11 @@ func saveIssue(filePath string, comments []Comment, labels []IssueLabel) {
 	token := os.Getenv("INPUT_GITHUB_TOKEN")
 	repoName := os.Getenv("GITHUB_REPOSITORY")
 	issueTitle := IssueTitle{Value: fmt.Sprintf("[todo-mitsukeru-kun] %s", filePath)}
-	issueBody := &IssueBody{Value: "<details>\\n<summary>Todo Comments</summary>\\n\\n\\n"}
+	issueBody := &IssueBody{Value: "<details>\n<summary>Todo Comments</summary>\n\n\n"}
 	for _, comment := range comments {
 		issueBody.add(comment.makeLine())
 	}
-	issueBody.add("</details>\\n")
+	issueBody.add("</details>\n")
 
 	url := fmt.Sprintf("https://api.github.com/repos/%s/issues", repoName)
 	issue := Issue{Title: issueTitle, Body: *issueBody}
