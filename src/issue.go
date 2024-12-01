@@ -12,15 +12,19 @@ type Issue struct {
 }
 
 func (i Issue) toJson() string {
-	labelValues := make([]string, len(i.Labels))
-	for idx, label := range i.Labels {
-		labelValues[idx] = label.Value
+	issueMap := map[string]interface{}{
+		"title": i.Title.Value,
+		"body":  i.Body.Value,
 	}
 
-	issueMap := map[string]interface{}{
-		"title":  i.Title.Value,
-		"body":   i.Body.Value,
-		"labels": labelValues,
+	var labelValues []string
+	if len(i.Labels) > 0 {
+		labelValues = make([]string, len(i.Labels))
+		for idx, label := range i.Labels {
+			labelValues[idx] = label.Value
+		}
+
+		issueMap["labels"] = labelValues
 	}
 
 	b, err := json.Marshal(issueMap)
