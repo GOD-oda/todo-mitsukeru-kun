@@ -20,6 +20,7 @@ jobs:
         env:
           INPUT_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           INPUT_TARGET_DIR: "src"
+          INPUT_ISSUE_LABELS: "TODO,BUG"
 ```
 
 This workflow runs on Monday morning at 9:00 a.m. and searches for TODO comments in the `INPUT_TARGET_DIR` directory.
