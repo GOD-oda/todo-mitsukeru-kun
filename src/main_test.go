@@ -2,15 +2,17 @@ package main
 
 import (
 	"os"
+	"reflect"
 	"testing"
 )
 
 func TestGetEnv(t *testing.T) {
 	os.Setenv("INPUT_GITHUB_TOKEN", "github token")
 	os.Setenv("INPUT_TARGET_DIR", "target dir")
-	expected := Params{GithubToken: "github token", TargetDir: "target dir"}
+	os.Setenv("INPUT_ISSUE_LABELS", "")
+	expected := Params{GithubToken: "github token", TargetDir: "target dir", issueLabels: []IssueLabel{}}
 	actual := getEnv()
-	if expected != actual {
+	if !reflect.DeepEqual(expected, actual) {
 		t.Errorf("expected %v, but got %v", expected, actual)
 	}
 }

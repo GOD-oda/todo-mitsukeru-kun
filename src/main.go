@@ -106,7 +106,7 @@ func getIssues() (CachedItems, error) {
 	return cachedItems, err
 }
 
-func saveIssue(filePath string, comments []Comment) {
+func saveIssue(filePath string, comments []Comment, labels []IssueLabel) {
 	if comments == nil || len(comments) < 1 {
 		return
 	}
@@ -122,7 +122,11 @@ func saveIssue(filePath string, comments []Comment) {
 	issueBody.add("</details>\\n")
 
 	url := fmt.Sprintf("https://api.github.com/repos/%s/issues", repoName)
-	jsonData := Issue{Title: issueTitle, Body: *issueBody}.toJson()
+	issue := Issue{Title: issueTitle, Body: *issueBody}
+	if len(labels) > 0 {
+		issue.Labels = labels
+	}
+	jsonData := issue.toJson()
 
 	_, err := getIssues()
 	if err != nil {
@@ -167,7 +171,7 @@ func saveIssue(filePath string, comments []Comment) {
 	defer resp.Body.Close()
 }
 
-func visitFile(fp string, fi os.DirEntry, err error) error {
+func visitFile(fp string, fi os.DirEntry, err error, labels []IssueLabel) error {
 	if err != nil {
 		fmt.Println(err)
 		return nil
@@ -193,7 +197,7 @@ func visitFile(fp string, fi os.DirEntry, err error) error {
 		}
 	}
 
-	saveIssue(fp, comments)
+	saveIssue(fp, comments, labels)
 
 	return nil
 }
@@ -201,6 +205,7 @@ func visitFile(fp string, fi os.DirEntry, err error) error {
 type Params struct {
 	GithubToken string
 	TargetDir   string
+	issueLabels []IssueLabel
 }
 
 func getEnv() Params {
@@ -216,12 +221,26 @@ func getEnv() Params {
 		os.Exit(1)
 	}
 
-	return Params{GithubToken: githubToken, TargetDir: targetDir}
+	labelStr := os.Getenv("INPUT_ISSUE_LABELS")
+	var issueLabels []IssueLabel
+	if len(labelStr) > 0 {
+		labels := strings.Split(labelStr, ",")
+		issueLabels = make([]IssueLabel, len(labels))
+		for i, label := range labels {
+			issueLabels[i] = IssueLabel{Value: strings.TrimSpace(label)}
+		}
+	} else {
+		issueLabels = []IssueLabel{}
+	}
+
+	return Params{GithubToken: githubToken, TargetDir: targetDir, issueLabels: issueLabels}
 }
 
 func main() {
 	params := getEnv()
-	err := filepath.WalkDir(params.TargetDir, visitFile)
+	err := filepath.WalkDir(params.TargetDir, func(fp string, fi os.DirEntry, err error) error {
+		return visitFile(fp, fi, err, params.issueLabels)
+	})
 	if err != nil {
 		fmt.Println("Error walking the path:", err)
 	}
