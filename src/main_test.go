@@ -20,7 +20,7 @@ func TestGetEnv(t *testing.T) {
 func TestCommentMakeLine(t *testing.T) {
 	os.Setenv("GITHUB_REPOSITORY", "owner/repo")
 	c := Comment{Body: "TODO: TODO sample", LineNumber: 1, FilePath: "src/main.go"}
-	expected := "[1: TODO: TODO sample](https://github.com/owner/repo/blob/main/src/main.go#L1)\\n\\n"
+	expected := "[1: TODO: TODO sample](https://github.com/owner/repo/blob/main/src/main.go#L1)\n\n"
 
 	actual := c.makeLine()
 	if expected != actual {
